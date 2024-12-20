@@ -1,0 +1,72 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id                Int       @id @default(autoincrement())
+  firstname         String
+  lastname          String
+  email             String    @unique
+  password          String
+  userType          String    @default("GENERAL_DIRECTOR")
+  otp               String?
+  otpExpireDate     DateTime?
+  generalDirectorID Int?
+
+  picture String @default("none")
+
+  // One-to-Many relationship with Project
+  projects Project[] // A user can have many projects
+}
+
+model Project {
+  id          Int      @id @default(autoincrement())
+  name        String
+  BET         String
+  ETP         String
+  cost        Int
+  Location    String
+  Description String
+  progress    Int      @default(0)
+  start       DateTime @default(now())
+  end         DateTime
+
+  rapports Rapport[]
+
+  userId            Int
+  generalDirectorID Int
+  // Foreign key for User
+  user              User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // generalDirector              User @relation(fields: [generalDirectorID], references: [id], onDelete: Cascade, name: "userid" )
+}
+
+model Rapport {
+  id    Int      @id @default(autoincrement())
+  date  DateTime @default(now())
+  title String
+  text  String
+
+  projectId Int
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  images Image[]
+}
+
+model Image {
+  id  Int    @id @default(autoincrement())
+  url String
+
+  rapportId Int
+  rapport   Rapport @relation(fields: [rapportId], references: [id], onDelete: Cascade)
+}
